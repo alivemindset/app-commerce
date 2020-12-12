@@ -17,6 +17,8 @@ export default class ClientController {
 
     const client = await getRepository(Clients).findOne({ id: Number(id) })
 
+    if (!client) return response.status(404).json({ message: 'Client not found' })
+
     return response.status(200).json(client)
   }
 
