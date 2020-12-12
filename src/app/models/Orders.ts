@@ -1,5 +1,6 @@
 /* eslint camelcase: 0 */
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import ShoppingCarts from './ShoppingCarts'
 
 @Entity('orders')
 export default class Orders {
@@ -17,4 +18,7 @@ export default class Orders {
 
   @Column()
   created_at!: Date
+
+  @OneToMany(type => ShoppingCarts, shoppingcarts => shoppingcarts.order)
+  products!: ShoppingCarts[]
 }

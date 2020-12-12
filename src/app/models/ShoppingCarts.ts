@@ -1,5 +1,6 @@
 /* eslint camelcase: 0 */
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import Orders from './Orders'
 
 @Entity('shopping_carts')
 export default class ShoppingCarts {
@@ -14,4 +15,8 @@ export default class ShoppingCarts {
 
   @Column()
   quantity!: number
+
+  @ManyToOne(type => Orders)
+  @JoinColumn({ name: 'order_id', referencedColumnName: 'id' })
+  order!: Orders
 }

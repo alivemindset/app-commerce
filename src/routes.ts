@@ -1,5 +1,6 @@
 import Router from 'express'
 import ClientController from './app/controllers/ClientController'
+import OrderController from './app/controllers/OrderController'
 import ProductController from './app/controllers/ProductController'
 
 const routes = Router()
@@ -19,5 +20,12 @@ routes.get('/produtos/:id', new ProductController().show)
 routes.post('/produtos', new ProductController().store)
 routes.put('/produtos/:id', new ProductController().update)
 routes.delete('/produtos/:id', new ProductController().remove)
+
+// CRUD Pedidos
+routes.get('/pedidos', new OrderController().index)
+routes.get('/pedidos/:id', new OrderController().show)
+routes.post('/pedidos', new OrderController().store)
+routes.put('/pedidos/:id', new OrderController().update)
+routes.delete('/pedidos/:id', new OrderController().remove)
 
 export default routes
