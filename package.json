@@ -8,9 +8,7 @@
   "scripts": {
     "dev": "ts-node-dev src/app.ts",
     "typeorm": "ts-node-dev ./node_modules/typeorm/cli.js",
-    "pretest": "set NODE_ENV=test & yarn typeorm migration:run",
     "test": "set NODE_ENV=test & jest --runInBand",
-    "posttest": "set NODE_ENV=test & yarn typeorm migration:revert",
     "test:watch": "set NODE_ENV=test & jest --watch"
   },
   "devDependencies": {
