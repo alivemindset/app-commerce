@@ -8,6 +8,7 @@ import { isNumber } from '../utils/utils'
 import Products from '../models/Products'
 import mail from '../services/mail'
 import { orderHTML } from '../views/mail/order'
+import pdf, { CreateOptions } from 'html-pdf'
 
 interface IProduct {
   product_id: number
@@ -173,6 +174,38 @@ export default class OrderController {
 
       if (client.email === infoMail.accepted[0]) return response.status(201).json({ status: true, mailSend: true, clientMail: client.email })
       else return response.status(500).json({ status: true, mailSend: false, message: 'The recipient declined the email' })
+    })
+  }
+
+  async report (request: Request, response: Response) {
+    const { id } = request.params
+    if (!isNumber(id)) return response.status(400).json({ message: 'Invalid params' })
+
+    const order = await getRepository(Orders).findOne({
+      relations: ['products'], where: { id: Number(id) }
+    })
+    if (!order) return response.status(404).json({ message: 'Order not found' })
+
+    const client = await getRepository(Clients).findOne({ id: order.client_id })
+    if (!client) return response.status(500).json({ message: 'Client not found?' })
+
+    const products = await Promise.all(order.products.map(async product => {
+      const productInfo = await getRepository(Products).findOne({ id: product.product_id })
+      return productInfo
+    })) as Products[]
+
+    const options: CreateOptions = {
+      type: 'pdf',
+      format: 'A4',
+      orientation: 'portrait'
+    }
+
+    pdf.create(orderHTML(order, products, client), options).toBuffer((err, buffer) => {
+      if (err) return response.status(500).json({ message: 'Internal server error' })
+
+      response.setHeader('Content-Type', 'application/pdf')
+      response.setHeader('Content-Disposition', 'attachment; filename=quote.pdf')
+      return response.status(200).end(buffer)
     })
   }
 }
