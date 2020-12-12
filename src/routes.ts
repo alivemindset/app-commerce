@@ -28,4 +28,7 @@ routes.post('/pedidos', new OrderController().store)
 routes.put('/pedidos/:id', new OrderController().update)
 routes.delete('/pedidos/:id', new OrderController().remove)
 
+// SENDMAIL
+routes.post('/pedidos/:id/sendmail', new OrderController().sendmail)
+
 export default routes

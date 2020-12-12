@@ -6,6 +6,8 @@ import ShoppingCarts from '../models/ShoppingCarts'
 import { getRepository } from 'typeorm'
 import { isNumber } from '../utils/utils'
 import Products from '../models/Products'
+import mail from '../services/mail'
+import { orderHTML } from '../views/mail/order'
 
 interface IProduct {
   product_id: number
@@ -140,5 +142,37 @@ export default class OrderController {
     if (notDeletedOrder && notDeletedShoppingCart) return response.status(404).json({ message: 'Order not found' })
 
     return response.status(200).json({ message: 'Order deleted' })
+  }
+
+  async sendmail (request: Request, response: Response) {
+    const { id } = request.params
+    if (!isNumber(id)) return response.status(400).json({ message: 'Invalid params' })
+
+    const order = await getRepository(Orders).findOne({
+      relations: ['products'], where: { id: Number(id) }
+    })
+    if (!order) return response.status(404).json({ message: 'Order not found' })
+
+    const client = await getRepository(Clients).findOne({ id: order.client_id })
+    if (!client) return response.status(500).json({ message: 'Client not found?' })
+
+    const products = await Promise.all(order.products.map(async product => {
+      const productInfo = await getRepository(Products).findOne({ id: product.product_id })
+      return productInfo
+    })) as Products[]
+
+    const mailOptions = {
+      from: process.env.MAIL_FROM,
+      to: client.email,
+      subject: 'Anotamos o seu pedido!',
+      html: orderHTML(order, products, client)
+    }
+
+    mail.sendMail(mailOptions, async (error, infoMail) => {
+      if (error) return response.status(500).json({ status: true, mailSend: false, message: 'Problem with send mail', error })
+
+      if (client.email === infoMail.accepted[0]) return response.status(201).json({ status: true, mailSend: true, clientMail: client.email })
+      else return response.status(500).json({ status: true, mailSend: false, message: 'The recipient declined the email' })
+    })
   }
 }
