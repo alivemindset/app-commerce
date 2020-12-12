@@ -1,5 +1,5 @@
 require('dotenv').config({
-  path: process.env.NODE_ENV === 'test' ? '.env.testing' : '.env'
+  path: process.env.NODE_ENV && process.env.NODE_ENV.trim() === 'test' ? '.env.testing' : '.env.dev'
 })
 
 module.exports = {
@@ -9,6 +9,7 @@ module.exports = {
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  logging: false,
   migrations: [
     './src/database/migrations/*.ts'
   ],
