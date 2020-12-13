@@ -1,11 +1,14 @@
 {
   "name": "app-commerce",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/src/app.js",
+  "type": "commonjs",
   "repository": "https://github.com/alivemindset/app-commerce.git",
   "author": "Lucas Simoni Mendes <lucas.simoni@outlook.com>",
   "license": "MIT",
   "scripts": {
+    "start": "node dist/src/app.js",
+    "build": "tsc",
     "dev": "ts-node-dev src/app.ts",
     "typeorm": "ts-node-dev ./node_modules/typeorm/cli.js",
     "test": "jest --runInBand",

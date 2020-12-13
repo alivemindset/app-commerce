@@ -1,6 +1,4 @@
-require('dotenv').config({
-  path: process.env.NODE_ENV && process.env.NODE_ENV.trim() === 'test' ? '.env.testing' : '.env.dev'
-})
+require('dotenv').config()
 
 module.exports = {
   name: 'default',
@@ -12,12 +10,12 @@ module.exports = {
   database: process.env.DB_NAME,
   logging: false,
   migrations: [
-    './src/database/migrations/*.ts'
+    process.env.ENVIRONMENT === 'development' ? 'src/database/migrations/*.ts' : 'dist/src/database/migrations/*.js'
   ],
   entities: [
-    './src/app/models/*.ts'
+    process.env.ENVIRONMENT === 'development' ? 'src/app/models/*.ts' : 'dist/src/app/models/*.js'
   ],
   cli: {
-    migrationsDir: './src/database/migrations'
+    migrationsDir: process.env.ENVIRONMENT === 'development' ? 'src/database/migrations' : 'dist/src/app/migrations'
   }
 }
