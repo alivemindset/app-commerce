@@ -4,11 +4,15 @@ import Orders from '../models/Orders'
 import Clients from '../models/Clients'
 import ShoppingCarts from '../models/ShoppingCarts'
 import { getRepository } from 'typeorm'
-import { isNumber } from '../utils/utils'
+import { isNumber, notSetOrArrayEmpty, notSetOrEmpty, ProductNotFound } from '../utils/utils'
 import Products from '../models/Products'
 import mail from '../services/mail'
 import { orderHTML } from '../views/order'
 import pdf, { CreateOptions } from 'html-pdf'
+import { getOrderById, saveOrder } from '../utils/OrderUtils'
+import { getClientById } from '../utils/ClientUtils'
+import { isRequired } from '../views/errors/isRequired'
+import { verifyProductById } from '../utils/ProductUtils'
 
 interface IProduct {
   product_id: number
@@ -27,14 +31,7 @@ export default class OrderController {
   async show (request: Request, response: Response) {
     const { id } = request.params
 
-    if (!isNumber(id)) return response.status(400).json({ message: 'Invalid params' })
-
-    const order = await getRepository(Orders).findOne({
-      relations: ['products'],
-      where: { id: Number(id) }
-    })
-
-    if (!order) return response.status(404).json({ message: 'Order not found' })
+    const order = await getOrderById(id)
 
     return response.status(200).json(order)
   }
@@ -44,14 +41,12 @@ export default class OrderController {
     const products: IProduct[] = request.body.products
     const payment_methods = ['dinheiro', 'cartão', 'cheque']
 
-    if (!isNumber(client_id)) return response.status(400).json({ message: 'Invalid client_id' })
-    const client = await getRepository(Clients).findOne({ id: client_id })
-    if (!client) return response.status(404).json({ message: 'Client not found' })
+    await getClientById(client_id)
 
-    if (!payment_method || payment_method.trim() === '') return response.status(400).json({ message: 'Payment method is required' })
-    if (!payment_methods.includes(payment_method)) return response.status(400).json({ message: 'Payment method invalid, please use: dinheiro, cartão, cheque' })
+    if (notSetOrEmpty(payment_method)) return isRequired('Payment method', response)
+    if (!payment_methods.includes(payment_method)) return response.status(400).json({ message: 'Invalid payment method, please use: dinheiro, cartão or cheque' })
 
-    if (!products || products.length === 0) return response.status(400).json({ message: 'Products is required' })
+    if (notSetOrArrayEmpty(products)) return isRequired('Product', response)
 
     const newOrder = new Orders()
     newOrder.client_id = client_id
@@ -59,11 +54,10 @@ export default class OrderController {
     newOrder.payment_method = payment_method
     newOrder.created_at = created_at
 
-    const order = await getRepository(Orders).save(newOrder)
+    const order = await saveOrder(newOrder)
 
-    const invalidProducts = await Promise.all(products.map(async product => {
-      const isProduct = await getRepository(Products).findOne({ id: product.product_id })
-      if (!isProduct) return { invalid_product_id: product.product_id }
+    await Promise.all(products.map(async product => {
+      await verifyProductById(product.product_id, order.id)
 
       const newShoppingCart = new ShoppingCarts()
       newShoppingCart.product_id = product.product_id
@@ -72,14 +66,7 @@ export default class OrderController {
       await getRepository(ShoppingCarts).save(newShoppingCart)
     }))
 
-    if (invalidProducts.find(invalid => invalid?.invalid_product_id)) {
-      await getRepository(ShoppingCarts).delete({ order_id: order.id })
-      await getRepository(Orders).delete({ id: order.id })
-      return response.status(404).json({ message: 'Products not found', products: invalidProducts })
-    }
-
     if (order.id >= 0) return response.status(201).json({ message: 'Order created', order: { ...order, products: products } })
-    else return response.status(500).json({ message: 'Error in create a new order', order: { ...order, products: products } })
   }
 
   async update (request: Request, response: Response) {
@@ -121,7 +108,7 @@ export default class OrderController {
       if (invalidProducts.find(invalid => invalid?.invalid_product_id)) {
         await getRepository(ShoppingCarts).delete({ order_id: order.id })
         await getRepository(ShoppingCarts).save(initialProducts)
-        return response.status(404).json({ message: 'Products not found', products: invalidProducts })
+        throw new ProductNotFound()
       }
     }
 

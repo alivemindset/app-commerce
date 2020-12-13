@@ -4,6 +4,14 @@ export class ConflictDocument extends Error {}
 
 export class ClientNotFound extends Error {}
 export class ProductNotFound extends Error {}
+export class OrderNotFound extends Error {}
+
+export class InvalidProduct extends Error {
+  constructor (message: string) {
+    super()
+    this.message = message
+  }
+}
 
 export const isNumber = (param: any) => {
   return !isNaN(parseFloat(param)) && isFinite(param)
@@ -17,4 +25,8 @@ export const isBRLCurrency = (param: any) => {
 
 export const notSetOrEmpty = (input: string) => {
   return (!input || input.trim() === '')
+}
+
+export const notSetOrArrayEmpty = (input: any[]) => {
+  return (!input || input.length === 0)
 }
