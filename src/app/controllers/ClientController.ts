@@ -2,7 +2,8 @@ import { Request, Response } from 'express'
 import Clients from '../models/Clients'
 import { getRepository } from 'typeorm'
 import { isNumber } from '../utils/utils'
-import { alreadyHasClientWithThisDocument, alreadyHasClientWithThisEmail, getClientById, saveClient } from '../utils/ClientUtils'
+import { alreadyHasClientWithThisDocument, alreadyHasClientWithThisEmail, getClientById, notSetOrEmpty, saveClient } from '../utils/ClientUtils'
+import { isRequired } from '../views/errors/isRequired'
 
 export default class ClientController {
   async index (request: Request, response: Response) {
@@ -21,16 +22,13 @@ export default class ClientController {
   async store (request: Request, response: Response) {
     const { name, email, document, genre } = request.body
 
-    if (!name || name.trim() === '') return response.status(400).json({ message: 'Name is required' })
-    if (!email || email.trim() === '') return response.status(400).json({ message: 'E-mail is required' })
-    if (!document || document.trim() === '') return response.status(400).json({ message: 'Document is required' })
-    if (!genre || genre.trim() === '') return response.status(400).json({ message: 'Genre is required' })
+    if (notSetOrEmpty(name)) return isRequired('Name', response)
+    if (notSetOrEmpty(email)) return isRequired('E-mail', response)
+    if (notSetOrEmpty(document)) return isRequired('Document', response)
+    if (notSetOrEmpty(genre)) return isRequired('Genre', response)
 
-    const hasDocument = !!await getRepository(Clients).findOne({ document })
-    const hasEmail = !!await getRepository(Clients).findOne({ email })
-
-    if (hasDocument) return response.status(409).json({ message: 'Document already exists' })
-    if (hasEmail) return response.status(409).json({ message: 'E-mail already exists' })
+    await alreadyHasClientWithThisEmail(email)
+    await alreadyHasClientWithThisDocument(document)
 
     const newClient = new Clients()
     newClient.name = name
@@ -38,10 +36,9 @@ export default class ClientController {
     newClient.document = document
     newClient.genre = genre
 
-    const client = await getRepository(Clients).save(newClient)
+    const client = await saveClient(newClient)
 
     if (client.id >= 0) return response.status(201).json({ message: 'Client created', client })
-    else return response.status(500).json({ message: 'Error in create a new client', client })
   }
 
   async update (request: Request, response: Response) {
