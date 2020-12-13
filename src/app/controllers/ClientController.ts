@@ -63,8 +63,8 @@ export default class ClientController {
     const { id } = request.params
 
     const client = await getClientById(id)
-    const deletedClient = await getRepository(Clients).delete({ id: Number(id) })
+    await getRepository(Clients).delete({ id: Number(id) })
 
-    return response.status(200).json({ message: 'Client deleted', client: deletedClient })
+    return response.status(200).json({ message: 'Client deleted', client: client })
   }
 }
