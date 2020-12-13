@@ -1,3 +1,10 @@
+export class NotIsNumber extends Error {}
+export class ConflictEmail extends Error {}
+export class ConflictDocument extends Error {}
+
+export class ClientNotFound extends Error {}
+export class ProductNotFound extends Error {}
+
 export const isNumber = (param: any) => {
   return !isNaN(parseFloat(param)) && isFinite(param)
 }

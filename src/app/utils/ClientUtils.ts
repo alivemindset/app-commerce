@@ -1,11 +1,6 @@
 import Clients from '../models/Clients'
 import { getRepository } from 'typeorm'
-import { isNumber } from './utils'
-
-export class NotIsNumber extends Error {}
-export class ClientNotFound extends Error {}
-export class ConflictEmail extends Error {}
-export class ConflictDocument extends Error {}
+import { ClientNotFound, ConflictDocument, ConflictEmail, isNumber, NotIsNumber } from './utils'
 
 export const getClientById = async (id: number | string) => {
   if (!isNumber(id)) throw new NotIsNumber()
