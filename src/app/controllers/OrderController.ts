@@ -4,7 +4,7 @@ import Orders from '../models/Orders'
 import Clients from '../models/Clients'
 import ShoppingCarts from '../models/ShoppingCarts'
 import { getRepository } from 'typeorm'
-import { isNumber, notSetOrArrayEmpty, notSetOrEmpty, ProductNotFound } from '../utils/utils'
+import { isNumber, notSetOrArrayEmpty, notSetOrEmpty, OrderNotFound, ProductNotFound } from '../utils/utils'
 import Products from '../models/Products'
 import mail from '../services/mail'
 import { orderHTML } from '../views/order'
@@ -127,22 +127,16 @@ export default class OrderController {
     const notDeletedOrder = !deletedOrder.affected || deletedOrder.affected <= 0
     const notDeletedShoppingCart = !deletedShoppingCart.affected || deletedShoppingCart.affected <= 0
 
-    if (notDeletedOrder && notDeletedShoppingCart) return response.status(404).json({ message: 'Order not found' })
+    if (notDeletedOrder && notDeletedShoppingCart) throw new OrderNotFound()
 
     return response.status(200).json({ message: 'Order deleted' })
   }
 
   async sendmail (request: Request, response: Response) {
     const { id } = request.params
-    if (!isNumber(id)) return response.status(400).json({ message: 'Invalid params' })
+    const order = await getOrderById(id)
 
-    const order = await getRepository(Orders).findOne({
-      relations: ['products'], where: { id: Number(id) }
-    })
-    if (!order) return response.status(404).json({ message: 'Order not found' })
-
-    const client = await getRepository(Clients).findOne({ id: order.client_id })
-    if (!client) return response.status(500).json({ message: 'Client not found?' })
+    const client = await getClientById(order.client_id)
 
     const products = await Promise.all(order.products.map(async product => {
       const productInfo = await getRepository(Products).findOne({ id: product.product_id })
