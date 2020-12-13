@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import Clients from '../models/Clients'
 import { getRepository } from 'typeorm'
 import { isNumber } from '../utils/utils'
-import { getClientById } from '../utils/ClientUtils'
+import { alreadyHasClientWithThisDocument, alreadyHasClientWithThisEmail, getClientById, saveClient } from '../utils/ClientUtils'
 
 export default class ClientController {
   async index (request: Request, response: Response) {
@@ -49,15 +49,17 @@ export default class ClientController {
     const { name, document, email, genre } = request.body
 
     const client = await getClientById(id)
+    await alreadyHasClientWithThisEmail(email)
+    await alreadyHasClientWithThisDocument(document)
 
     client.name = name
     client.document = document
     client.email = email
     client.genre = genre
 
-    const userSaved = await getRepository(Clients).save(client)
+    const clientSaved = await saveClient(client)
 
-    return response.status(200).json({ message: 'Client updated', client: userSaved })
+    return response.status(200).json({ message: 'Client updated', client: clientSaved })
   }
 
   async remove (request: Request, response: Response) {
