@@ -33,7 +33,3 @@ export const saveClient = async (client: Clients) => {
 
   return clientSaved
 }
-
-export const notSetOrEmpty = (input: string) => {
-  return (!input || input.trim() === '')
-}

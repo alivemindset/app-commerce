@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
 import Clients from '../models/Clients'
 import { getRepository } from 'typeorm'
-import { isNumber } from '../utils/utils'
-import { alreadyHasClientWithThisDocument, alreadyHasClientWithThisEmail, getClientById, notSetOrEmpty, saveClient } from '../utils/ClientUtils'
+import { notSetOrEmpty } from '../utils/utils'
+import { alreadyHasClientWithThisDocument, alreadyHasClientWithThisEmail, getClientById, saveClient } from '../utils/ClientUtils'
 import { isRequired } from '../views/errors/isRequired'
 
 export default class ClientController {
@@ -61,8 +61,8 @@ export default class ClientController {
 
   async remove (request: Request, response: Response) {
     const { id } = request.params
-    if (!isNumber(id)) return response.status(400).json({ message: 'Invalid params' })
 
+    const client = await getClientById(id)
     const deletedClient = await getRepository(Clients).delete({ id: Number(id) })
 
     return response.status(200).json({ message: 'Client deleted', client: deletedClient })

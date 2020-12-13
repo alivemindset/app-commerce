@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { isNumber, isBRLCurrency } from '../../src/app/utils/utils'
+import { isNumber, isBRLCurrency, notSetOrEmpty } from '../../src/app/utils/utils'
 
 describe('isNumber', () => {
   it('should return true when received a number (3)', () => {
@@ -56,6 +56,15 @@ describe('isBRLCurrency', () => {
   it('should return false when receive any letter that not be R$', () => {
     const actual = isBRLCurrency('R$ A,0')
     const expected = false
+
+    expect(actual).toBe(expected)
+  })
+})
+
+describe('notSetOrEmpty', () => {
+  it('should return true when receive " " ', () => {
+    const actual = notSetOrEmpty(' ')
+    const expected = true
 
     expect(actual).toBe(expected)
   })
