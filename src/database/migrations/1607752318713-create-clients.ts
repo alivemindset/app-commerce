@@ -19,7 +19,8 @@ export class createClients1607752318713 implements MigrationInterface {
         },
         {
           name: 'document',
-          type: 'varchar'
+          type: 'varchar',
+          isUnique: true
         },
         {
           name: 'genre',
@@ -27,7 +28,8 @@ export class createClients1607752318713 implements MigrationInterface {
         },
         {
           name: 'email',
-          type: 'varchar'
+          type: 'varchar',
+          isUnique: true
         }
       ]
     }))

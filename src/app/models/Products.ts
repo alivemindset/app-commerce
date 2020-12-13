@@ -12,7 +12,7 @@ export default class Products {
   color!: string
 
   @Column()
-  width!: string
+  size!: string
 
   @Column()
   value!: string
