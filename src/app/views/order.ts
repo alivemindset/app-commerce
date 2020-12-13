@@ -1,6 +1,6 @@
-import Orders from '../../models/Orders'
-import Products from '../../models/Products'
-import Clients from '../../models/Clients'
+import Orders from '../models/Orders'
+import Products from '../models/Products'
+import Clients from '../models/Clients'
 
 export function orderHTML (order: Orders, products: Products[], client: Clients): string {
   const subtotals: number[] = []
@@ -50,7 +50,7 @@ export function orderHTML (order: Orders, products: Products[], client: Clients)
       </p>
       
       ${products.map(product => {
-        const productInfo = order.products.find(productOrder => productOrder.product_id === product.id)
+        const productInfo = order.products.find((productOrder) => productOrder.product_id === product.id)
         return `<p>(${productInfo?.quantity} qtd) ${product.name} ${product.color} ${product.size} - ${product.value}un [subtotal: ${totalValue(product.value, productInfo?.quantity)}] </p>`
       })}
       

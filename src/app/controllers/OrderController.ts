@@ -7,7 +7,7 @@ import { getRepository } from 'typeorm'
 import { isNumber } from '../utils/utils'
 import Products from '../models/Products'
 import mail from '../services/mail'
-import { orderHTML } from '../views/mail/order'
+import { orderHTML } from '../views/order'
 import pdf, { CreateOptions } from 'html-pdf'
 
 interface IProduct {

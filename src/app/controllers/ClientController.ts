@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import Clients from '../models/Clients'
 import { getRepository } from 'typeorm'
 import { isNumber } from '../utils/utils'
+import { getClientById } from '../utils/ClientUtils'
 
 export default class ClientController {
   async index (request: Request, response: Response) {
@@ -12,12 +13,7 @@ export default class ClientController {
 
   async show (request: Request, response: Response) {
     const { id } = request.params
-
-    if (!isNumber(id)) return response.status(400).json({ message: 'Invalid params' })
-
-    const client = await getRepository(Clients).findOne({ id: Number(id) })
-
-    if (!client) return response.status(404).json({ message: 'Client not found' })
+    const client = await getClientById(id)
 
     return response.status(200).json(client)
   }
@@ -30,8 +26,8 @@ export default class ClientController {
     if (!document || document.trim() === '') return response.status(400).json({ message: 'Document is required' })
     if (!genre || genre.trim() === '') return response.status(400).json({ message: 'Genre is required' })
 
-    const hasDocument = !!await await getRepository(Clients).findOne({ document })
-    const hasEmail = !!await await getRepository(Clients).findOne({ email })
+    const hasDocument = !!await getRepository(Clients).findOne({ document })
+    const hasEmail = !!await getRepository(Clients).findOne({ email })
 
     if (hasDocument) return response.status(409).json({ message: 'Document already exists' })
     if (hasEmail) return response.status(409).json({ message: 'E-mail already exists' })
@@ -52,10 +48,7 @@ export default class ClientController {
     const { id } = request.params
     const { name, document, email, genre } = request.body
 
-    if (!isNumber(id)) return response.status(400).json({ message: 'Invalid params' })
-
-    const client = await getRepository(Clients).findOne({ id: Number(id) })
-    if (typeof client === 'undefined') return response.status(404).json({ message: 'Client not found' })
+    const client = await getClientById(id)
 
     client.name = name
     client.document = document
