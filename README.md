@@ -16,4 +16,8 @@ After complete the above commands, run in dev:
 <pre><code> yarn dev  </pre></code>
 
 Or run build:
-<pre><code> yarn   </pre></code>
+<pre><code> yarn build  </pre></code>
+And run in production mode:
+<pre><code> yarn start  </pre></code>
+
+For run in production mode, set the .env ENVIRONMENT=production
