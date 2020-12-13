@@ -5,7 +5,7 @@ import ProductController from './app/controllers/ProductController'
 
 const routes = Router()
 
-routes.get('/', async (request, response) => response.status(200))
+routes.get('/', async (request, response) => response.status(200).send())
 
 // CRUD Clientes
 routes.get('/clientes', new ClientController().index)
